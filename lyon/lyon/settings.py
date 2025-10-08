@@ -17,6 +17,7 @@ import cloudinary.uploader
 import cloudinary.api
 
 
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -149,3 +150,8 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Redirects after login/logout
+LOGIN_URL = 'core:login'              # redirects unauthenticated users here
+LOGIN_REDIRECT_URL = 'core:dashboard' # after successful login
+LOGOUT_REDIRECT_URL = 'core:login'    # after logout

@@ -1,0 +1,267 @@
+ {% extends 'core/base.html' %}
+
+{% block title %}Sign In - StockLearn{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-blue-50 to-gray-100 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <div class="sm:mx-auto sm:w-full sm:max-w-md">
+        <!-- Logo -->
+        <div class="flex justify-center">
+            <a href="{% url 'core:home' %}" class="flex items-center space-x-3">
+                <div class="w-12 h-12 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-chart-line text-white text-xl"></i>
+                </div>
+                <span class="text-2xl font-bold text-gray-900">StockLearn</span>
+            </a>
+        </div>
+        
+        <h2 class="mt-8 text-center text-3xl font-extrabold text-gray-900">
+            Welcome back
+        </h2>
+        <p class="mt-2 text-center text-sm text-gray-600">
+            Sign in to access your courses, stock recommendations, and market insights
+        </p>
+    </div>
+
+    <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+        <div class="bg-white py-8 px-6 shadow-xl rounded-2xl sm:px-10 border border-gray-100">
+            <!-- Demo Account Info (for development) -->
+            {% if not user.is_authenticated and debug %}
+            <div class="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <h4 class="text-sm font-semibold text-blue-800 mb-2">Demo Accounts</h4>
+                <div class="text-xs text-blue-700 space-y-1">
+                    <div><strong>Student:</strong> student / pass123</div>
+                    <div><strong>Premium:</strong> premium / pass123</div>
+                    <div><strong>Instructor:</strong> instructor / pass123</div>
+                </div>
+            </div>
+            {% endif %}
+
+            <form class="space-y-6" method="POST">
+                {% csrf_token %}
+                
+                <!-- Username Field -->
+                <div>
+                    <label for="username" class="block text-sm font-medium text-gray-700 mb-2">
+                        <i class="fas fa-user mr-2 text-gray-400"></i>
+                        Username or Email
+                    </label>
+                    <div class="mt-1 relative">
+                        <input id="username" name="username" type="text" required 
+                               class="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200"
+                               placeholder="Enter your username or email"
+                               value="{{ request.POST.username }}">
+                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center">
+                            <i class="fas fa-user text-gray-400"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Password Field -->
+                <div>
+                    <div class="flex items-center justify-between mb-2">
+                        <label for="password" class="block text-sm font-medium text-gray-700">
+                            <i class="fas fa-lock mr-2 text-gray-400"></i>
+                            Password
+                        </label>
+                        <!-- Forgot Password Link (if implemented) -->
+                        <!-- <a href="#" class="text-sm text-blue-600 hover:text-blue-500">
+                            Forgot password?
+                        </a> -->
+                    </div>
+                    <div class="mt-1 relative">
+                        <input id="password" name="password" type="password" required 
+                               class="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200"
+                               placeholder="Enter your password">
+                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center">
+                            <i class="fas fa-lock text-gray-400"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Remember Me (Optional) -->
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <input id="remember_me" name="remember_me" type="checkbox" 
+                               class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                        <label for="remember_me" class="ml-2 block text-sm text-gray-700">
+                            Remember me
+                        </label>
+                    </div>
+                    
+                    <!-- Next Parameter -->
+                    {% if next %}
+                    <input type="hidden" name="next" value="{{ next }}">
+                    {% endif %}
+                </div>
+
+                <!-- Submit Button -->
+                <div>
+                    <button type="submit" 
+                            class="group w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-semibold text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-200 transform hover:-translate-y-0.5">
+                        <i class="fas fa-sign-in-alt mr-2 group-hover:scale-110 transition-transform"></i>
+                        Sign in to your account
+                    </button>
+                </div>
+            </form>
+
+            <!-- Social Login (Optional - Future Implementation) -->
+            <!-- <div class="mt-6">
+                <div class="relative">
+                    <div class="absolute inset-0 flex items-center">
+                        <div class="w-full border-t border-gray-300"></div>
+                    </div>
+                    <div class="relative flex justify-center text-sm">
+                        <span class="px-2 bg-white text-gray-500">
+                            Or continue with
+                        </span>
+                    </div>
+                </div>
+
+                <div class="mt-6 grid grid-cols-2 gap-3">
+                    <div>
+                        <a href="#" class="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                            <i class="fab fa-google text-red-500"></i>
+                        </a>
+                    </div>
+                    <div>
+                        <a href="#" class="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                            <i class="fab fa-linkedin text-blue-600"></i>
+                        </a>
+                    </div>
+                </div>
+            </div> -->
+
+            <!-- Sign Up Link -->
+            <div class="mt-8">
+                <div class="relative">
+                    <div class="absolute inset-0 flex items-center">
+                        <div class="w-full border-t border-gray-300"></div>
+                    </div>
+                    <div class="relative flex justify-center text-sm">
+                        <span class="px-2 bg-white text-gray-500">
+                            Don't have an account?
+                        </span>
+                    </div>
+                </div>
+
+                <div class="mt-6">
+                    <a href="{% url 'core:signup' %}{% if next %}?next={{ next|urlencode }}{% endif %}" 
+                       class="w-full flex justify-center py-3 px-4 border border-gray-300 rounded-lg shadow-sm text-sm font-semibold text-gray-700 bg-white hover:bg-gray-50 transition duration-200 group">
+                        <i class="fas fa-user-plus mr-2 text-gray-400 group-hover:text-gray-600"></i>
+                        Create a new account
+                    </a>
+                </div>
+            </div>
+
+            <!-- Guest Access (Optional) -->
+            <div class="mt-6 text-center">
+                <p class="text-xs text-gray-500">
+                    By signing in, you agree to our 
+                    <a href="#" class="text-blue-600 hover:text-blue-500">Terms of Service</a> 
+                    and 
+                    <a href="#" class="text-blue-600 hover:text-blue-500">Privacy Policy</a>.
+                </p>
+            </div>
+        </div>
+
+        <!-- Additional Help Section -->
+        <div class="mt-8 text-center">
+            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                <div class="flex items-center justify-center space-x-2 text-yellow-800">
+                    <i class="fas fa-lightbulb"></i>
+                    <p class="text-sm font-medium">New to stock market investing?</p>
+                </div>
+                <p class="text-xs text-yellow-700 mt-1">
+                    Start with our free beginner courses and build your knowledge step by step.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Add focus effects to form inputs
+    const inputs = document.querySelectorAll('input[type="text"], input[type="password"]');
+    inputs.forEach(input => {
+        input.addEventListener('focus', function() {
+            this.parentElement.classList.add('ring-2', 'ring-blue-500', 'ring-opacity-20');
+            this.parentElement.classList.remove('border-gray-300');
+            this.parentElement.classList.add('border-blue-500');
+        });
+        
+        input.addEventListener('blur', function() {
+            this.parentElement.classList.remove('ring-2', 'ring-blue-500', 'ring-opacity-20');
+            this.parentElement.classList.remove('border-blue-500');
+            this.parentElement.classList.add('border-gray-300');
+        });
+    });
+
+    // Add loading state to submit button
+    const form = document.querySelector('form');
+    const submitButton = form.querySelector('button[type="submit"]');
+    
+    form.addEventListener('submit', function() {
+        submitButton.disabled = true;
+        submitButton.innerHTML = `
+            <i class="fas fa-spinner fa-spin mr-2"></i>
+            Signing in...
+        `;
+        submitButton.classList.remove('hover:from-blue-700', 'hover:to-purple-700', 'hover:-translate-y-0.5');
+        submitButton.classList.add('opacity-75');
+    });
+
+    // Auto-focus on username field
+    const usernameField = document.getElementById('username');
+    if (usernameField) {
+        setTimeout(() => {
+            usernameField.focus();
+        }, 300);
+    }
+
+    // Password visibility toggle (optional enhancement)
+    const passwordField = document.getElementById('password');
+    const passwordToggle = document.createElement('button');
+    passwordToggle.type = 'button';
+    passwordToggle.className = 'absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600';
+    passwordToggle.innerHTML = '<i class="fas fa-eye"></i>';
+    
+    passwordToggle.addEventListener('click', function() {
+        const type = passwordField.getAttribute('type') === 'password' ? 'text' : 'password';
+        passwordField.setAttribute('type', type);
+        this.innerHTML = type === 'password' ? '<i class="fas fa-eye"></i>' : '<i class="fas fa-eye-slash"></i>';
+    });
+
+    if (passwordField) {
+        passwordField.parentElement.querySelector('.absolute').remove();
+        passwordField.parentElement.appendChild(passwordToggle);
+    }
+});
+</script>
+
+<style>
+/* Custom focus styles */
+input:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Smooth transitions */
+.transition-all {
+    transition: all 0.3s ease;
+}
+
+/* Loading animation */
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.fa-spinner {
+    animation: spin 1s linear infinite;
+}
+</style>
+{% endblock %}
