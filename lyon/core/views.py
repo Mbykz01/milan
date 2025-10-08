@@ -228,9 +228,15 @@ def stock_recommendations(request):
         recommendations = recommendations[:3]
         messages.info(request, 'Upgrade to premium for full access to all stock recommendations.')
 
-    return render(request, 'core/stock_recommendations.html', {
-        'recommendations': recommendations,
-    })  # Fixed template path
+    # Pre-calculate percentage change for each recommendation
+    for rec in recommendations:
+        try:
+            rec.percent_change = ((rec.target_price - rec.current_price) / rec.current_price) * 100
+        except ZeroDivisionError:
+            rec.percent_change = 0
+
+    return render(request, 'core/stock_recommendations.html', {'recommendations': recommendations})
+
 
 @login_required
 def news(request):
@@ -244,6 +250,7 @@ def news(request):
         'news_articles': news_articles,
     })  # Fixed template path
 
+
 @login_required
 def referral_view(request):
     user_referrals = Referral.objects.filter(referrer=request.user)
@@ -252,14 +259,22 @@ def referral_view(request):
     # Calculate total earned from referrals
     total_earned = sum([referral.credit_amount for referral in user_referrals])
 
+    # Count how many referrals user has
+    referral_count = user_referrals.count()
+
+    # Calculate how many more needed to reach 5
+    remaining_referrals = max(0, 5 - referral_count)
+
     context = {
         'user_referrals': user_referrals,
         'referral_url': referral_url,
         'available_credits': request.user.referral_credits,
         'total_earned': total_earned,
-        'referral_count': user_referrals.count(),
+        'referral_count': referral_count,
+        'remaining_referrals': remaining_referrals,  # 👈 Added this
     }
-    return render(request, 'core/referral.html', context)  # Fixed template path
+    return render(request, 'core/referral.html', context)
+
 
 @login_required
 def enroll_course(request, course_id):

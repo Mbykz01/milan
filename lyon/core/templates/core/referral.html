@@ -79,8 +79,9 @@
                     {% if referral_count >= 5 %}
                     🎉 You've unlocked premium rewards! Keep referring to earn more.
                     {% else %}
-                    Refer {{ 5|subtract:referral_count }} more friends to unlock exclusive rewards!
+                    Refer {{ remaining_referrals }} more friends to unlock exclusive rewards!
                     {% endif %}
+
                 </p>
             </div>
         </div>

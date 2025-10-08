@@ -109,14 +109,11 @@
                             <i class="fas fa-bullseye mr-1 text-gray-500"></i>
                             Target Price
                         </p>
-                        <p class="text-2xl font-bold text-gray-800">${{ rec.target_price }}</p>
-                        {% with potential=rec.target_price|floatformat:2|add:0 current=rec.current_price|floatformat:2|add:0 %}
-                        {% with change=potential|subtract:current percent_change=change|div:current|mul:100 %}
-                        <p class="text-sm mt-1 {% if change > 0 %}text-green-600{% else %}text-red-600{% endif %}">
-                            {% if change > 0 %}+{% endif %}{{ percent_change|floatformat:1 }}%
+                       <p class="text-2xl font-bold text-gray-800">${{ rec.target_price }}</p>
+                        <p class="text-sm mt-1 {% if rec.percent_change > 0 %}text-green-600{% else %}text-red-600{% endif %}">
+                            {% if rec.percent_change > 0 %}+{% endif %}{{ rec.percent_change|floatformat:1 }}%
                         </p>
-                        {% endwith %}
-                        {% endwith %}
+
                     </div>
                 </div>
 
