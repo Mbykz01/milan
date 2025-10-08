@@ -1,4 +1,4 @@
- {% load static %}
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,28 +6,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}StockLearn - Master Stock Market Investing{% endblock %}</title>
     
-    <!-- PRODUCTION TAILWIND CSS (built locally) -->
-    <!-- <link href="{% static 'css/dist/output.css' %}" rel="stylesheet"> -->
     <script src="https://cdn.tailwindcss.com"></script>
 
-    <!-- Font Awesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 
-    <!-- Favicon -->
     <link rel="icon" href="{% static 'favicon.ico' %}">
     
-    <!-- Additional meta tags for production -->
     <meta name="description" content="Master stock market investing with comprehensive courses, real-time recommendations, and market news.">
     <meta name="keywords" content="stock market, investing, courses, trading, finance">
 </head>
 <body class="bg-gray-50 min-h-screen flex flex-col">
 
-    <!-- Navbar -->
     <nav class="bg-white shadow-lg sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4">
             <div class="flex justify-between items-center py-4">
                 
-                <!-- Logo -->
                 <div class="flex items-center space-x-4">
                     <a href="{% url 'core:home' %}" class="flex items-center space-x-2">
                         <i class="fas fa-chart-line text-blue-600 text-2xl"></i>
@@ -35,14 +28,12 @@
                     </a>
                 </div>
 
-                <!-- Mobile menu button -->
                 <div class="md:hidden">
                     <button id="mobile-menu-button" class="text-gray-600 hover:text-blue-600">
                         <i class="fas fa-bars text-xl"></i>
                     </button>
                 </div>
 
-                <!-- Menu Links -->
                 <div id="mobile-menu" class="hidden md:flex items-center space-x-8">
                     <a href="{% url 'core:course_list' %}" class="text-gray-600 hover:text-blue-600 transition duration-200">Courses</a>
                     <a href="{% url 'core:stock_recommendations' %}" class="text-gray-600 hover:text-blue-600 transition duration-200">Recommendations</a>
@@ -53,7 +44,6 @@
                     {% endif %}
                 </div>
 
-                <!-- Auth Links -->
                 <div class="hidden md:flex items-center space-x-4">
                     {% if user.is_authenticated %}
                         <div class="flex items-center space-x-3">
@@ -61,15 +51,15 @@
                                 <span class="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded-full font-semibold">Premium</span>
                             {% endif %}
                             <span class="text-gray-700">Hello, {{ user.username }}</span>
-                            <div class="relative group">
+                            <div class="relative">
                                 {% if user.profile_picture %}
-                                    <img src="{{ user.profile_picture_url }}" alt="Profile" class="w-8 h-8 rounded-full object-cover cursor-pointer">
+                                    <img src="{{ user.profile_picture_url }}" id="profile-menu-button" alt="Profile" class="w-8 h-8 rounded-full object-cover cursor-pointer">
                                 {% else %}
-                                    <div class="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-sm font-semibold cursor-pointer">
+                                    <div id="profile-menu-button" class="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-sm font-semibold cursor-pointer">
                                         {{ user.username|first|upper }}
                                     </div>
                                 {% endif %}
-                                <div class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 hidden group-hover:block">
+                                <div id="profile-menu-items" class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 hidden">
                                     <a href="{% url 'core:profile' %}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">
                                         <i class="fas fa-user mr-2"></i>Profile
                                     </a>
@@ -89,7 +79,6 @@
                 </div>
             </div>
 
-            <!-- Mobile Menu (hidden by default) -->
             <div id="mobile-menu-items" class="hidden md:hidden py-4 border-t border-gray-200">
                 <div class="flex flex-col space-y-4">
                     <a href="{% url 'core:course_list' %}" class="text-gray-600 hover:text-blue-600">Courses</a>
@@ -109,7 +98,6 @@
         </div>
     </nav>
 
-    <!-- Messages -->
     {% if messages %}
         <div class="max-w-7xl mx-auto px-4 mt-4">
             {% for message in messages %}
@@ -135,13 +123,11 @@
         </div>
     {% endif %}
 
-    <!-- Main Content -->
     <main class="flex-grow">
         {% block content %}
         {% endblock %}
     </main>
 
-    <!-- Footer -->
     <footer class="bg-gray-800 text-white mt-16">
         <div class="max-w-7xl mx-auto px-4 py-8">
             <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
@@ -200,25 +186,46 @@
         </div>
     </footer>
 
-    <!-- JavaScript for mobile menu -->
     <script>
-        document.getElementById('mobile-menu-button').addEventListener('click', function() {
+        document.addEventListener('DOMContentLoaded', function() {
+            // --- Mobile Menu Toggle ---
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
             const mobileMenu = document.getElementById('mobile-menu-items');
-            mobileMenu.classList.toggle('hidden');
-        });
 
-        // Close mobile menu when clicking outside
-        document.addEventListener('click', function(event) {
-            const mobileMenu = document.getElementById('mobile-menu-items');
-            const menuButton = document.getElementById('mobile-menu-button');
-            
-            if (!menuButton.contains(event.target) && !mobileMenu.contains(event.target)) {
-                mobileMenu.classList.add('hidden');
+            mobileMenuButton.addEventListener('click', function(event) {
+                event.stopPropagation();
+                mobileMenu.classList.toggle('hidden');
+            });
+
+            // Close mobile menu when clicking outside
+            document.addEventListener('click', function(event) {
+                if (!mobileMenuButton.contains(event.target) && !mobileMenu.contains(event.target)) {
+                    mobileMenu.classList.add('hidden');
+                }
+            });
+
+            // --- Profile Dropdown Toggle (The Fix) ---
+            const profileButton = document.getElementById('profile-menu-button');
+            const profileMenu = document.getElementById('profile-menu-items');
+
+            if (profileButton && profileMenu) {
+                // Toggle the menu on button click
+                profileButton.addEventListener('click', function(event) {
+                    event.stopPropagation(); // Prevents the document click listener from immediately closing it
+                    profileMenu.classList.toggle('hidden');
+                });
+
+                // Close the menu when clicking anywhere else on the document
+                document.addEventListener('click', function(event) {
+                    // Check if the click is outside the button AND outside the menu
+                    if (!profileButton.contains(event.target) && !profileMenu.contains(event.target)) {
+                        profileMenu.classList.add('hidden');
+                    }
+                });
             }
         });
     </script>
 
-    <!-- Additional block for page-specific JavaScript -->
     {% block extra_js %}
     {% endblock %}
 
