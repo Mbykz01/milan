@@ -1,0 +1,304 @@
+ {% extends 'core/base.html' %}
+
+{% block title %}{{ course.title }} - StockLearn{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 py-8">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Course Info -->
+        <div class="lg:col-span-2">
+            <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+                <!-- Course Thumbnail with Cloudinary -->
+                {% if course.thumbnail %}
+                <img src="{{ course.thumbnail_url }}" alt="{{ course.title }}" class="w-full h-64 object-cover">
+                {% else %}
+                <div class="w-full h-64 bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center">
+                    <i class="fas fa-chart-line text-white text-6xl"></i>
+                </div>
+                {% endif %}
+                
+                <div class="p-6">
+                    <div class="flex items-center space-x-4 mb-4 flex-wrap gap-2">
+                        <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">{{ course.level|title }}</span>
+                        {% if course.category %}
+                        <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">{{ course.category.name }}</span>
+                        {% endif %}
+                        {% if course.price == 0 %}
+                        <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">Free</span>
+                        {% else %}
+                        <span class="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm font-medium">Premium</span>
+                        {% endif %}
+                        {% if user.subscription_tier == 'premium' and course.price > 0 %}
+                        <span class="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm font-medium">Included in Premium</span>
+                        {% endif %}
+                    </div>
+                    
+                    <h1 class="text-3xl font-bold text-gray-800 mb-4">{{ course.title }}</h1>
+                    <p class="text-gray-600 text-lg leading-relaxed mb-6">{{ course.description|linebreaks }}</p>
+                    
+                    <!-- Course Stats -->
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                        <div class="text-center p-4 bg-gray-50 rounded-lg">
+                            <div class="text-2xl font-bold text-blue-600">{{ lessons.count }}</div>
+                            <div class="text-sm text-gray-600 mt-1">Lessons</div>
+                        </div>
+                        <div class="text-center p-4 bg-gray-50 rounded-lg">
+                            <div class="text-2xl font-bold text-green-600">
+                                {% if course.duration_hours %}{{ course.duration_hours }}{% else %}--{% endif %}
+                            </div>
+                            <div class="text-sm text-gray-600 mt-1">Hours</div>
+                        </div>
+                        <div class="text-center p-4 bg-gray-50 rounded-lg">
+                            <div class="text-2xl font-bold text-purple-600">
+                                {% if course.price == 0 %}Free{% else %}${{ course.price }}{% endif %}
+                            </div>
+                            <div class="text-sm text-gray-600 mt-1">Price</div>
+                        </div>
+                        <div class="text-center p-4 bg-gray-50 rounded-lg">
+                            <div class="text-2xl font-bold text-orange-600">{{ course.level|title }}</div>
+                            <div class="text-sm text-gray-600 mt-1">Level</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Lessons List -->
+            <div class="bg-white rounded-xl shadow-lg mt-6 p-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">Course Content</h2>
+                
+                {% if lessons %}
+                <div class="space-y-3">
+                    {% for lesson in lessons %}
+                    <div class="border border-gray-200 rounded-lg p-4 hover:border-blue-300 transition-colors duration-200 hover:shadow-md">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-4 flex-1">
+                                <!-- Lesson Type Icon -->
+                                <div class="flex-shrink-0">
+                                    {% if lesson.content_type == 'video' %}
+                                        <i class="fas fa-play-circle text-red-500 text-xl"></i>
+                                    {% elif lesson.content_type == 'image' %}
+                                        <i class="fas fa-image text-green-500 text-xl"></i>
+                                    {% elif lesson.content_type == 'pdf' %}
+                                        <i class="fas fa-file-pdf text-red-500 text-xl"></i>
+                                    {% elif lesson.content_type == 'text' %}
+                                        <i class="fas fa-file-alt text-blue-500 text-xl"></i>
+                                    {% elif lesson.content_type == 'quiz' %}
+                                        <i class="fas fa-question-circle text-purple-500 text-xl"></i>
+                                    {% else %}
+                                        <i class="fas fa-question-circle text-gray-400 text-xl"></i>
+                                    {% endif %}
+                                </div>
+                                
+                                <!-- Lesson Info -->
+                                <div class="flex-1">
+                                    <h3 class="font-semibold text-gray-800">{{ lesson.title }}</h3>
+                                    <p class="text-sm text-gray-600">
+                                        {{ lesson.get_content_type_display }} 
+                                        {% if lesson.duration_minutes %}• {{ lesson.duration_minutes }} min{% endif %}
+                                    </p>
+                                    {% if lesson.description %}
+                                    <p class="text-sm text-gray-500 mt-1">{{ lesson.description|truncatewords:20 }}</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <!-- Lesson Actions -->
+                            <div class="flex items-center space-x-2 flex-shrink-0">
+                                {% if lesson.is_preview %}
+                                <span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs font-medium">Preview</span>
+                                {% endif %}
+                                
+                                {% if can_access or lesson.is_preview %}
+                                <a href="{% url 'core:lesson_view' course.id lesson.id %}" 
+                                   class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition duration-200 flex items-center space-x-1">
+                                    <span>View</span>
+                                    <i class="fas fa-arrow-right text-xs"></i>
+                                </a>
+                                {% else %}
+                                <span class="text-gray-400 text-sm bg-gray-100 px-3 py-2 rounded-lg">
+                                    <i class="fas fa-lock mr-1"></i> Locked
+                                </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-8 text-gray-500">
+                    <i class="fas fa-book-open text-4xl mb-4 text-gray-300"></i>
+                    <p class="text-lg">No lessons available yet.</p>
+                    <p class="text-sm">Check back later for course content.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="space-y-6">
+            <!-- Enrollment Card -->
+            <div class="bg-white rounded-xl shadow-lg p-6 sticky top-24">
+                {% if is_enrolled %}
+                <div class="text-center">
+                    <i class="fas fa-check-circle text-green-500 text-4xl mb-4"></i>
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">Enrolled</h3>
+                    <p class="text-gray-600 mb-4">You have full access to this course</p>
+                    {% if lessons %}
+                    <a href="{% url 'core:lesson_view' course.id lessons.first.id %}" 
+                       class="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition duration-200 flex items-center justify-center space-x-2 mb-3">
+                        <i class="fas fa-play"></i>
+                        <span>Continue Learning</span>
+                    </a>
+                    {% endif %}
+                </div>
+                {% else %}
+                <div class="text-center">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">Enroll in this Course</h3>
+                    <p class="text-gray-600 mb-4">Get lifetime access to all content</p>
+                    
+                    <!-- Pricing -->
+                    <div class="mb-4">
+                        {% if course.price == 0 %}
+                        <p class="text-3xl font-bold text-green-600">Free</p>
+                        {% elif user.subscription_tier == 'premium' %}
+                        <p class="text-2xl font-bold text-green-600">Free for Premium</p>
+                        <p class="text-sm text-gray-500 line-through">${{ course.price }}</p>
+                        {% else %}
+                        <p class="text-3xl font-bold text-gray-800">${{ course.price }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Enrollment Button -->
+                    {% if can_access %}
+                    <a href="{% url 'core:enroll_course' course.id %}" 
+                       class="w-full bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 transition duration-200 flex items-center justify-center space-x-2 mb-2">
+                        <i class="fas fa-rocket"></i>
+                        <span>Enroll for Free</span>
+                    </a>
+                    {% else %}
+                    <a href="{% url 'core:enroll_course' course.id %}" 
+                       class="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition duration-200 flex items-center justify-center space-x-2 mb-2">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span>Enroll Now</span>
+                    </a>
+                    {% endif %}
+                    
+                    <!-- Credit Purchase Option -->
+                    {% if not can_access and course.price > 0 and user.referral_credits >= course.price %}
+                    <div class="mt-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                        <p class="text-sm text-blue-800 mb-2">
+                            <i class="fas fa-coins mr-1"></i>
+                            Use your referral credits!
+                        </p>
+                        <p class="text-xs text-blue-600">
+                            You have ${{ user.referral_credits }} credits available
+                        </p>
+                    </div>
+                    {% endif %}
+                    
+                    <p class="text-xs text-gray-500 mt-3">
+                        <i class="fas fa-shield-alt mr-1"></i>
+                        30-day money-back guarantee
+                    </p>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Instructor Info -->
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h3 class="font-semibold text-lg text-gray-800 mb-4">Instructor</h3>
+                <div class="flex items-center space-x-4">
+                    <div class="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold">
+                        {% if course.instructor %}
+                            {{ course.instructor|first|upper }}
+                        {% else %}
+                            <i class="fas fa-user"></i>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <h4 class="font-semibold text-gray-800">{{ course.instructor|default:"Expert Instructor" }}</h4>
+                        <p class="text-sm text-gray-600">Course Instructor</p>
+                        <p class="text-xs text-gray-500 mt-1">Professional stock market analyst</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Course Features -->
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h3 class="font-semibold text-lg text-gray-800 mb-4">This course includes:</h3>
+                <ul class="space-y-3">
+                    <li class="flex items-center space-x-3">
+                        <i class="fas fa-play-circle text-green-500"></i>
+                        <span class="text-gray-700">{{ lessons.count }} on-demand lessons</span>
+                    </li>
+                    <li class="flex items-center space-x-3">
+                        <i class="fas fa-infinity text-blue-500"></i>
+                        <span class="text-gray-700">Full lifetime access</span>
+                    </li>
+                    <li class="flex items-center space-x-3">
+                        <i class="fas fa-mobile-alt text-purple-500"></i>
+                        <span class="text-gray-700">Access on mobile and TV</span>
+                    </li>
+                    <li class="flex items-center space-x-3">
+                        <i class="fas fa-certificate text-orange-500"></i>
+                        <span class="text-gray-700">Certificate of completion</span>
+                    </li>
+                    <li class="flex items-center space-x-3">
+                        <i class="fas fa-download text-red-500"></i>
+                        <span class="text-gray-700">Downloadable resources</span>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Share Course -->
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h3 class="font-semibold text-lg text-gray-800 mb-4">Share this course</h3>
+                <div class="flex space-x-3">
+                    <a href="#" class="flex-1 bg-blue-600 text-white py-2 rounded text-center hover:bg-blue-700 transition duration-200">
+                        <i class="fab fa-facebook-f"></i>
+                    </a>
+                    <a href="#" class="flex-1 bg-blue-400 text-white py-2 rounded text-center hover:bg-blue-500 transition duration-200">
+                        <i class="fab fa-twitter"></i>
+                    </a>
+                    <a href="#" class="flex-1 bg-blue-800 text-white py-2 rounded text-center hover:bg-blue-900 transition duration-200">
+                        <i class="fab fa-linkedin-in"></i>
+                    </a>
+                    <a href="#" class="flex-1 bg-green-500 text-white py-2 rounded text-center hover:bg-green-600 transition duration-200">
+                        <i class="fab fa-whatsapp"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Add smooth scrolling and enhance UX
+document.addEventListener('DOMContentLoaded', function() {
+    // Add loading states to buttons
+    const enrollButton = document.querySelector('a[href*="enroll_course"]');
+    if (enrollButton) {
+        enrollButton.addEventListener('click', function(e) {
+            if (!this.classList.contains('bg-gray-400')) {
+                this.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Processing...';
+                this.classList.add('bg-gray-400');
+                this.classList.remove('hover:bg-blue-700', 'hover:bg-green-700');
+            }
+        });
+    }
+
+    // Add animation to lesson cards on hover
+    const lessonCards = document.querySelectorAll('.border-gray-200');
+    lessonCards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-2px)';
+        });
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+        });
+    });
+});
+</script>
+{% endblock %}

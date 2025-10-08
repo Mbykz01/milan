@@ -1,0 +1,367 @@
+ {% extends 'core/base.html' %}
+
+{% block title %}Market News - StockLearn{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 py-8">
+    <!-- Header Section -->
+    <div class="mb-8 text-center">
+        <h1 class="text-4xl font-bold text-gray-800 mb-4">Market News & Insights</h1>
+        <p class="text-gray-600 text-lg max-w-2xl mx-auto">
+            Stay updated with the latest stock market news, analysis, and financial insights from trusted sources.
+        </p>
+        
+        <!-- Last Updated -->
+        {% if news_articles %}
+        <div class="mt-4 inline-flex items-center space-x-2 bg-green-50 text-green-700 px-4 py-2 rounded-lg">
+            <i class="fas fa-clock"></i>
+            <span class="text-sm">Updated {{ news_articles.0.published_date|timesince }} ago</span>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Premium Upgrade Banner -->
+    {% if user.subscription_tier != 'premium' and news_articles|length > 5 %}
+    <div class="mb-8 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-2xl p-6 text-white shadow-lg">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between">
+            <div class="mb-4 md:mb-0">
+                <div class="flex items-center space-x-2 mb-2">
+                    <i class="fas fa-crown text-xl"></i>
+                    <h3 class="text-xl font-bold">Unlock Premium News</h3>
+                </div>
+                <p class="text-yellow-100 max-w-2xl">
+                    Get unlimited access to all market news, exclusive analysis, and real-time updates. 
+                    Premium members get 10x more content and early access to breaking news.
+                </p>
+            </div>
+            <button class="bg-white text-orange-600 px-6 py-3 rounded-lg font-bold hover:bg-gray-100 transition duration-200 whitespace-nowrap">
+                Upgrade to Premium
+            </button>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- News Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for article in news_articles %}
+        <article class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 border border-gray-100">
+            <!-- Article Image with Cloudinary -->
+            <div class="relative">
+                {% if article.image_file_url %}
+                <img src="{{ article.image_file_url }}" 
+                     alt="{{ article.title }}" 
+                     class="w-full h-48 object-cover"
+                     loading="lazy">
+                {% elif article.image_url %}
+                <img src="{{ article.image_url }}" 
+                     alt="{{ article.title }}" 
+                     class="w-full h-48 object-cover"
+                     loading="lazy">
+                {% else %}
+                <div class="w-full h-48 bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+                    <i class="fas fa-newspaper text-white text-4xl"></i>
+                </div>
+                {% endif %}
+                
+                <!-- Premium Badge -->
+                {% if forloop.counter0 > 4 and user.subscription_tier != 'premium' %}
+                <div class="absolute top-3 right-3">
+                    <span class="bg-yellow-500 text-white text-xs px-2 py-1 rounded-full font-semibold shadow-lg">
+                        <i class="fas fa-crown mr-1"></i>Premium
+                    </span>
+                </div>
+                {% endif %}
+                
+                <!-- Source Badge -->
+                <div class="absolute top-3 left-3">
+                    <span class="bg-black bg-opacity-70 text-white text-xs px-2 py-1 rounded-full font-medium">
+                        {{ article.source }}
+                    </span>
+                </div>
+            </div>
+            
+            <!-- Article Content -->
+            <div class="p-6">
+                <!-- Meta Information -->
+                <div class="flex items-center justify-between mb-3">
+                    <div class="flex items-center space-x-2 text-sm text-gray-500">
+                        <i class="fas fa-calendar"></i>
+                        <time datetime="{{ article.published_date|date:'c' }}">
+                            {{ article.published_date|date:"M d, Y" }}
+                        </time>
+                    </div>
+                    <div class="flex items-center space-x-1 text-sm text-gray-500">
+                        <i class="fas fa-clock"></i>
+                        <span>{{ article.published_date|timesince }} ago</span>
+                    </div>
+                </div>
+                
+                <!-- Title -->
+                <h2 class="text-xl font-bold text-gray-800 mb-3 line-clamp-2 leading-tight">
+                    {{ article.title }}
+                </h2>
+                
+                <!-- Summary/Content -->
+                <div class="mb-4">
+                    {% if article.summary %}
+                    <p class="text-gray-600 leading-relaxed line-clamp-3">{{ article.summary }}</p>
+                    {% else %}
+                    <p class="text-gray-600 leading-relaxed line-clamp-3">{{ article.content|truncatewords:40 }}</p>
+                    {% endif %}
+                </div>
+                
+                <!-- Tags -->
+                {% if article.tags %}
+                <div class="mb-4">
+                    <div class="flex flex-wrap gap-1">
+                        {% for tag in article.tags|slice:":3" %}
+                        <span class="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs font-medium">
+                            {{ tag }}
+                        </span>
+                        {% endfor %}
+                        {% if article.tags|length > 3 %}
+                        <span class="bg-gray-100 text-gray-600 px-2 py-1 rounded text-xs">
+                            +{{ article.tags|length|add:"-3" }} more
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- Action Buttons -->
+                <div class="flex justify-between items-center pt-4 border-t border-gray-100">
+                    <!-- Read More Button -->
+                    <button onclick="openArticleModal({{ forloop.counter0 }})"
+                            class="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 transition duration-200 flex items-center space-x-2 group">
+                        <span>Read More</span>
+                        <i class="fas fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
+                    </button>
+                    
+                    <!-- Share Button -->
+                    <button onclick="shareArticle('{{ article.title }}', '{{ request.build_absolute_uri }}')"
+                            class="text-gray-500 hover:text-blue-600 transition duration-200 p-2 rounded-lg hover:bg-blue-50">
+                        <i class="fas fa-share-alt"></i>
+                    </button>
+                </div>
+            </div>
+        </article>
+        {% empty %}
+        <!-- Empty State -->
+        <div class="col-span-3 text-center py-16">
+            <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-newspaper text-3xl text-gray-400"></i>
+            </div>
+            <h3 class="text-2xl font-semibold text-gray-700 mb-2">No News Available</h3>
+            <p class="text-gray-500 mb-6 max-w-md mx-auto">
+                We're currently updating our news feed. Please check back later for the latest market insights and financial news.
+            </p>
+            <button onclick="location.reload()" 
+                    class="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition duration-200 inline-flex items-center space-x-2">
+                <i class="fas fa-redo"></i>
+                <span>Refresh News</span>
+            </button>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Load More Button (if needed in future) -->
+    {% if news_articles|length >= 6 %}
+    <div class="text-center mt-12">
+        <button class="bg-gray-800 text-white px-8 py-4 rounded-lg font-semibold hover:bg-gray-900 transition duration-200 inline-flex items-center space-x-2">
+            <i class="fas fa-spinner animate-spin"></i>
+            <span>Loading More News...</span>
+        </button>
+        <p class="text-gray-500 text-sm mt-2">{{ news_articles|length }} articles loaded</p>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Article Modal -->
+<div id="articleModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
+        <div class="relative">
+            <!-- Modal Header -->
+            <div class="flex justify-between items-center p-6 border-b border-gray-200">
+                <h3 class="text-xl font-bold text-gray-800" id="modalTitle">Article Title</h3>
+                <button onclick="closeArticleModal()" 
+                        class="text-gray-500 hover:text-gray-700 text-2xl p-2 rounded-lg hover:bg-gray-100 transition duration-200">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <!-- Modal Content -->
+            <div class="p-6 overflow-y-auto max-h-[60vh]">
+                <div id="modalContent" class="prose max-w-none">
+                    <!-- Content will be loaded here -->
+                </div>
+            </div>
+            
+            <!-- Modal Footer -->
+            <div class="flex justify-between items-center p-6 border-t border-gray-200 bg-gray-50">
+                <div class="text-sm text-gray-600" id="modalMeta">
+                    <!-- Meta info will be loaded here -->
+                </div>
+                <div class="flex space-x-3">
+                    <button onclick="shareArticle(document.getElementById('modalTitle').textContent, window.location.href)"
+                            class="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 transition duration-200 flex items-center space-x-2">
+                        <i class="fas fa-share-alt"></i>
+                        <span>Share</span>
+                    </button>
+                    <button onclick="closeArticleModal()"
+                            class="bg-gray-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-gray-700 transition duration-200">
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Articles data for modal
+const articles = [
+    {% for article in news_articles %}
+    {
+        title: "{{ article.title|escapejs }}",
+        content: `{{ article.content|escapejs }}`,
+        summary: "{{ article.summary|escapejs }}",
+        source: "{{ article.source|escapejs }}",
+        published_date: "{{ article.published_date|date:'M d, Y' }}",
+        image_url: "{% if article.image_file_url %}{{ article.image_file_url }}{% else %}{{ article.image_url }}{% endif %}"
+    },
+    {% endfor %}
+];
+
+function openArticleModal(index) {
+    const article = articles[index];
+    const modal = document.getElementById('articleModal');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalContent = document.getElementById('modalContent');
+    const modalMeta = document.getElementById('modalMeta');
+    
+    // Check if article is premium and user is not premium
+    {% if user.subscription_tier != 'premium' %}
+    if (index > 4) {
+        modalContent.innerHTML = `
+            <div class="text-center py-8">
+                <div class="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-crown text-yellow-600 text-2xl"></i>
+                </div>
+                <h4 class="text-xl font-bold text-gray-800 mb-2">Premium Content</h4>
+                <p class="text-gray-600 mb-6">
+                    This article is available to premium members only. Upgrade your account to access exclusive market analysis and insights.
+                </p>
+                <button class="bg-yellow-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-yellow-600 transition duration-200">
+                    Upgrade to Premium
+                </button>
+            </div>
+        `;
+        modalTitle.textContent = 'Premium Content';
+        modalMeta.innerHTML = `
+            <span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-sm font-semibold">Premium Exclusive</span>
+        `;
+    } else {
+    {% endif %}
+        modalTitle.textContent = article.title;
+        modalContent.innerHTML = `
+            ${article.image_url ? `<img src="${article.image_url}" alt="${article.title}" class="w-full h-64 object-cover rounded-lg mb-6" loading="lazy">` : ''}
+            <div class="text-gray-700 leading-relaxed text-lg">
+                ${article.content || article.summary || 'Content not available.'}
+            </div>
+        `;
+        modalMeta.innerHTML = `
+            <div class="flex items-center space-x-4 text-sm text-gray-600">
+                <span><i class="fas fa-newspaper mr-1"></i> ${article.source}</span>
+                <span><i class="fas fa-calendar mr-1"></i> ${article.published_date}</span>
+            </div>
+        `;
+    {% if user.subscription_tier != 'premium' %}
+    }
+    {% endif %}
+    
+    modal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeArticleModal() {
+    const modal = document.getElementById('articleModal');
+    modal.classList.add('hidden');
+    document.body.style.overflow = 'auto';
+}
+
+function shareArticle(title, url) {
+    if (navigator.share) {
+        navigator.share({
+            title: title,
+            text: 'Check out this article from StockLearn:',
+            url: url
+        }).catch(console.error);
+    } else {
+        // Fallback: copy to clipboard
+        navigator.clipboard.writeText(`${title} - ${url}`).then(() => {
+            alert('Article link copied to clipboard!');
+        }).catch(console.error);
+    }
+}
+
+// Close modal on escape key
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        closeArticleModal();
+    }
+});
+
+// Close modal when clicking outside
+document.getElementById('articleModal').addEventListener('click', (e) => {
+    if (e.target.id === 'articleModal') {
+        closeArticleModal();
+    }
+});
+
+// Add loading animations
+document.addEventListener('DOMContentLoaded', function() {
+    const articles = document.querySelectorAll('article');
+    articles.forEach((article, index) => {
+        article.style.opacity = '0';
+        article.style.transform = 'translateY(20px)';
+        
+        setTimeout(() => {
+            article.style.transition = 'all 0.6s ease';
+            article.style.opacity = '1';
+            article.style.transform = 'translateY(0)';
+        }, index * 100);
+    });
+});
+</script>
+
+<style>
+.line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.line-clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.prose {
+    max-width: none;
+}
+
+.prose p {
+    margin-bottom: 1em;
+    line-height: 1.6;
+}
+
+.prose img {
+    border-radius: 0.5rem;
+}
+</style>
+{% endblock %}

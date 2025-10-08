@@ -1,0 +1,424 @@
+ {% extends 'core/base.html' %}
+
+{% block title %}{{ lesson.title }} - {{ course.title }} - StockLearn{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 py-8">
+    <!-- Breadcrumb -->
+    <nav class="flex mb-6" aria-label="Breadcrumb">
+        <ol class="inline-flex items-center space-x-1 md:space-x-3">
+            <li class="inline-flex items-center">
+                <a href="{% url 'core:home' %}" class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-blue-600">
+                    <i class="fas fa-home mr-2"></i>
+                    Home
+                </a>
+            </li>
+            <li>
+                <div class="flex items-center">
+                    <i class="fas fa-chevron-right text-gray-400 mx-2"></i>
+                    <a href="{% url 'core:course_list' %}" class="ml-1 text-sm font-medium text-gray-700 hover:text-blue-600 md:ml-2">Courses</a>
+                </div>
+            </li>
+            <li>
+                <div class="flex items-center">
+                    <i class="fas fa-chevron-right text-gray-400 mx-2"></i>
+                    <a href="{% url 'core:course_detail' course.id %}" class="ml-1 text-sm font-medium text-gray-700 hover:text-blue-600 md:ml-2">{{ course.title|truncatewords:3 }}</a>
+                </div>
+            </li>
+            <li aria-current="page">
+                <div class="flex items-center">
+                    <i class="fas fa-chevron-right text-gray-400 mx-2"></i>
+                    <span class="ml-1 text-sm font-medium text-gray-500 md:ml-2">{{ lesson.title|truncatewords:3 }}</span>
+                </div>
+            </li>
+        </ol>
+    </nav>
+
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+        <!-- Content Area -->
+        <div class="lg:col-span-3">
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <!-- Progress and Course Info -->
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6 p-4 bg-blue-50 rounded-lg">
+                    <div class="mb-4 md:mb-0">
+                        <h2 class="text-xl font-bold text-gray-800">{{ course.title }}</h2>
+                        <p class="text-gray-600 text-sm">Instructor: {{ course.instructor|default:"StockLearn Instructor" }}</p>
+                    </div>
+                    <div class="w-full md:w-64">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-sm font-semibold text-gray-700">Your Progress</span>
+                            <span class="text-sm font-bold text-blue-600">{{ progress|default:0|floatformat:0 }}%</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2.5">
+                            <div class="bg-blue-600 h-2.5 rounded-full transition-all duration-500" 
+                                 style="width: '{{ progress|default:0|floatformat:0 }}%'"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Content Display -->
+                <div class="mb-8">
+                    {% if lesson.content_type == 'video' %}
+                        {% if lesson.video_file_url %}
+                            <div class="bg-black rounded-xl overflow-hidden shadow-lg">
+                                <video controls class="w-full h-auto max-h-96 rounded-lg" 
+                                       poster="{% if course.thumbnail_url %}{{ course.thumbnail_url }}{% endif %}">
+                                    <source src="{{ lesson.video_file_url }}" type="video/mp4">
+                                    Your browser does not support the video tag.
+                                </video>
+                            </div>
+                        {% elif lesson.video_url %}
+                            <div class="bg-gray-900 rounded-xl overflow-hidden shadow-lg">
+                                <div class="aspect-w-16 aspect-h-9">
+                                    <iframe src="{{ lesson.video_url }}" 
+                                            class="w-full h-96 rounded-lg" 
+                                            frameborder="0" 
+                                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                                            allowfullscreen>
+                                    </iframe>
+                                </div>
+                            </div>
+                        {% else %}
+                            <div class="h-64 flex items-center justify-center bg-gray-100 rounded-lg">
+                                <div class="text-center text-gray-500">
+                                    <i class="fas fa-video-slash text-4xl mb-4"></i>
+                                    <p>Video content not available</p>
+                                </div>
+                            </div>
+                        {% endif %}
+                    
+                    {% elif lesson.content_type == 'image' %}
+                        {% if lesson.image_content_url %}
+                            <div class="flex justify-center bg-gray-50 p-4 rounded-xl">
+                                <img src="{{ lesson.image_content_url }}" 
+                                     alt="{{ lesson.title }}" 
+                                     class="max-w-full h-auto rounded-lg shadow-lg">
+                            </div>
+                        {% else %}
+                            <div class="h-64 flex items-center justify-center bg-gray-100 rounded-lg">
+                                <div class="text-center text-gray-500">
+                                    <i class="fas fa-image text-4xl mb-4"></i>
+                                    <p>Image content not available</p>
+                                </div>
+                            </div>
+                        {% endif %}
+                    
+                    {% elif lesson.content_type == 'pdf' %}
+                        {% if lesson.pdf_file %}
+                            <div class="border border-gray-200 rounded-xl p-6 bg-gray-50">
+                                <div class="flex flex-col md:flex-row md:items-center justify-between mb-4">
+                                    <div>
+                                        <h3 class="text-lg font-semibold text-gray-800">PDF Document</h3>
+                                        <p class="text-gray-600 text-sm">Download or view the document below</p>
+                                    </div>
+                                    <a href="{{ lesson.pdf_file.url }}" 
+                                       target="_blank" 
+                                       class="mt-2 md:mt-0 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition duration-200 inline-flex items-center space-x-2">
+                                        <i class="fas fa-download"></i>
+                                        <span>Download PDF</span>
+                                    </a>
+                                </div>
+                                <div class="border rounded-lg bg-white">
+                                    <iframe src="{{ lesson.pdf_file.url }}#toolbar=0" 
+                                            class="w-full h-96 rounded-lg" 
+                                            frameborder="0">
+                                    </iframe>
+                                </div>
+                            </div>
+                        {% else %}
+                            <div class="h-64 flex items-center justify-center bg-gray-100 rounded-lg">
+                                <div class="text-center text-gray-500">
+                                    <i class="fas fa-file-pdf text-4xl mb-4"></i>
+                                    <p>PDF document not available</p>
+                                </div>
+                            </div>
+                        {% endif %}
+                    
+                    {% elif lesson.content_type == 'text' %}
+                        {% if lesson.text_content %}
+                            <div class="bg-white border border-gray-200 rounded-xl p-6">
+                                <div class="prose max-w-none">
+                                    <div class="whitespace-pre-line text-gray-700 leading-relaxed text-lg">
+                                        {{ lesson.text_content|linebreaks }}
+                                    </div>
+                                </div>
+                            </div>
+                        {% else %}
+                            <div class="h-64 flex items-center justify-center bg-gray-100 rounded-lg">
+                                <div class="text-center text-gray-500">
+                                    <i class="fas fa-file-alt text-4xl mb-4"></i>
+                                    <p>Text content not available</p>
+                                </div>
+                            </div>
+                        {% endif %}
+
+                    {% elif lesson.content_type == 'quiz' %}
+                        <div class="bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-xl p-8 text-center">
+                            <i class="fas fa-question-circle text-purple-500 text-5xl mb-4"></i>
+                            <h3 class="text-2xl font-bold text-gray-800 mb-2">Quiz: {{ lesson.title }}</h3>
+                            <p class="text-gray-600 mb-6">This lesson contains an interactive quiz.</p>
+                            <div class="bg-yellow-100 border border-yellow-200 rounded-lg p-4 max-w-md mx-auto">
+                                <p class="text-yellow-800 text-sm">
+                                    <i class="fas fa-info-circle mr-2"></i>
+                                    Quiz functionality is coming soon!
+                                </p>
+                            </div>
+                        </div>
+                    
+                    {% else %}
+                        <div class="h-64 flex items-center justify-center bg-gray-100 rounded-lg">
+                            <div class="text-center text-gray-500">
+                                <i class="fas fa-file-alt text-4xl mb-4"></i>
+                                <p>No content available for this lesson.</p>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Lesson Info -->
+                <div class="border-t border-gray-200 pt-6">
+                    <div class="flex flex-wrap items-center gap-3 mb-4">
+                        <span class="bg-blue-100 text-blue-800 px-3 py-1.5 rounded-full text-sm font-semibold inline-flex items-center space-x-1">
+                            <i class="fas fa-tag"></i>
+                            <span>{{ lesson.get_content_type_display }}</span>
+                        </span>
+                        {% if lesson.is_preview %}
+                        <span class="bg-green-100 text-green-800 px-3 py-1.5 rounded-full text-sm font-semibold inline-flex items-center space-x-1">
+                            <i class="fas fa-eye"></i>
+                            <span>Free Preview</span>
+                        </span>
+                        {% endif %}
+                        <span class="bg-gray-100 text-gray-800 px-3 py-1.5 rounded-full text-sm font-semibold inline-flex items-center space-x-1">
+                            <i class="fas fa-clock"></i>
+                            <span>{{ lesson.duration_minutes }} min</span>
+                        </span>
+                    </div>
+                    
+                    <h1 class="text-2xl md:text-3xl font-bold text-gray-800 mb-4">{{ lesson.title }}</h1>
+                    
+                    {% if lesson.description %}
+                    <div class="bg-gray-50 rounded-lg p-4 mb-6">
+                        <p class="text-gray-700 leading-relaxed">{{ lesson.description }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Navigation -->
+                <div class="flex flex-col sm:flex-row justify-between mt-8 pt-6 border-t border-gray-200 gap-4">
+                    {% if previous_lesson %}
+                    <a href="{% url 'core:lesson_view' course.id previous_lesson.id %}" 
+                       class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition duration-200 flex items-center justify-center space-x-2 font-semibold">
+                        <i class="fas fa-arrow-left"></i>
+                        <span>Previous Lesson</span>
+                    </a>
+                    {% else %}
+                    <div></div>
+                    {% endif %}
+
+                    <div class="flex flex-col sm:flex-row gap-4">
+                        <a href="{% url 'core:course_detail' course.id %}" 
+                           class="bg-gray-600 text-white px-6 py-3 rounded-lg hover:bg-gray-700 transition duration-200 flex items-center justify-center space-x-2 font-semibold">
+                            <i class="fas fa-list"></i>
+                            <span>Course Overview</span>
+                        </a>
+                        
+                        {% if next_lesson %}
+                        <a href="{% url 'core:lesson_view' course.id next_lesson.id %}" 
+                           class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition duration-200 flex items-center justify-center space-x-2 font-semibold">
+                            <span>Next Lesson</span>
+                            <i class="fas fa-arrow-right"></i>
+                        </a>
+                        {% else %}
+                        <a href="{% url 'core:course_detail' course.id %}" 
+                           class="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition duration-200 flex items-center justify-center space-x-2 font-semibold">
+                            <i class="fas fa-trophy"></i>
+                            <span>Complete Course</span>
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Lessons Sidebar -->
+        <div class="lg:col-span-1">
+            <div class="bg-white rounded-xl shadow-lg p-6 sticky top-4">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="font-semibold text-lg text-gray-800">Course Content</h3>
+                    <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full font-semibold">
+                        {{ lessons.count }} lessons
+                    </span>
+                </div>
+                
+                <div class="space-y-2 max-h-[500px] overflow-y-auto pr-2">
+                    {% for l in lessons %}
+                    <a href="{% url 'core:lesson_view' course.id l.id %}" 
+                       class="block p-3 rounded-lg border transition-all duration-200 
+                              {% if l.id == lesson.id %}border-blue-500 bg-blue-50 shadow-sm{% else %}border-gray-200 hover:border-blue-300 hover:bg-blue-50{% endif %}">
+                        <div class="flex items-center space-x-3">
+                            <!-- Lesson Icon -->
+                            <div class="flex-shrink-0">
+                                {% if l.content_type == 'video' %}
+                                    <i class="fas fa-play-circle text-red-500 {% if l.id == lesson.id %}text-red-600{% endif %}"></i>
+                                {% elif l.content_type == 'image' %}
+                                    <i class="fas fa-image text-green-500 {% if l.id == lesson.id %}text-green-600{% endif %}"></i>
+                                {% elif l.content_type == 'pdf' %}
+                                    <i class="fas fa-file-pdf text-red-500 {% if l.id == lesson.id %}text-red-600{% endif %}"></i>
+                                {% elif l.content_type == 'text' %}
+                                    <i class="fas fa-file-alt text-blue-500 {% if l.id == lesson.id %}text-blue-600{% endif %}"></i>
+                                {% elif l.content_type == 'quiz' %}
+                                    <i class="fas fa-question-circle text-purple-500 {% if l.id == lesson.id %}text-purple-600{% endif %}"></i>
+                                {% else %}
+                                    <i class="fas fa-question-circle text-gray-400"></i>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Lesson Info -->
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm font-medium truncate {% if l.id == lesson.id %}text-blue-600{% else %}text-gray-700{% endif %}">
+                                    {{ l.title }}
+                                </p>
+                                <div class="flex items-center space-x-2 text-xs text-gray-500 mt-1">
+                                    <span class="flex items-center space-x-1">
+                                        <i class="fas fa-clock text-xs"></i>
+                                        <span>{{ l.duration_minutes }}m</span>
+                                    </span>
+                                    <span>•</span>
+                                    <span class="capitalize">{{ l.content_type }}</span>
+                                    {% if l.is_preview %}
+                                    <span class="text-green-600 font-medium">Preview</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <!-- Current Lesson Indicator -->
+                            {% if l.id == lesson.id %}
+                            <div class="flex-shrink-0">
+                                <div class="w-2 h-2 bg-blue-600 rounded-full"></div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </a>
+                    {% endfor %}
+                </div>
+
+                <!-- Course Progress Summary -->
+                <div class="mt-6 pt-6 border-t border-gray-200">
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-blue-600 mb-1">{{ progress|default:0|floatformat:0 }}%</div>
+                        <div class="text-sm text-gray-600">Course Completed</div>
+                        <div class="w-full bg-gray-200 rounded-full h-2 mt-2">
+                            <div class="bg-blue-600 h-2 rounded-full transition-all duration-500" 
+                                 style="width: '{{ progress|default:0|floatformat:0 }}%'"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-play video when it comes into view (optional)
+    const video = document.querySelector('video');
+    if (video) {
+        // Add loading state
+        video.addEventListener('loadstart', function() {
+            this.style.opacity = '0.7';
+        });
+        
+        video.addEventListener('canplay', function() {
+            this.style.opacity = '1';
+        });
+
+        // Auto-pause when tab is not visible
+        document.addEventListener('visibilitychange', function() {
+            if (document.hidden && !video.paused) {
+                video.pause();
+            }
+        });
+    }
+
+    // Smooth scroll for sidebar navigation
+    const lessonLinks = document.querySelectorAll('a[href*="lesson_view"]');
+    lessonLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            // Add loading indicator
+            const mainContent = document.querySelector('.lg\\:col-span-3');
+            if (mainContent) {
+                mainContent.style.opacity = '0.7';
+                mainContent.style.transition = 'opacity 0.3s';
+            }
+        });
+    });
+
+    // Add keyboard navigation
+    document.addEventListener('keydown', function(e) {
+        const previousLink = document.querySelector('a[href*="lesson_view"]:first-child');
+        const nextLink = document.querySelector('a[href*="lesson_view"]:last-child');
+        
+        if (e.key === 'ArrowLeft' && previousLink) {
+            previousLink.click();
+        } else if (e.key === 'ArrowRight' && nextLink) {
+            nextLink.click();
+        }
+    });
+
+    // Mark lesson as completed when video ends
+    if (video) {
+        video.addEventListener('ended', function() {
+            // You could add an AJAX call here to mark the lesson as completed
+            console.log('Video completed - lesson progress updated');
+        });
+    }
+});
+</script>
+
+<style>
+/* Custom scrollbar for sidebar */
+.max-h-\[500px\]::-webkit-scrollbar {
+    width: 4px;
+}
+
+.max-h-\[500px\]::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.max-h-\[500px\]::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 10px;
+}
+
+.max-h-\[500px\]::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+/* Smooth transitions */
+.transition-all {
+    transition: all 0.3s ease;
+}
+
+/* Ensure proper aspect ratio for videos */
+.aspect-w-16 {
+    position: relative;
+}
+
+.aspect-w-16::before {
+    content: '';
+    display: block;
+    padding-bottom: 56.25%; /* 16:9 aspect ratio */
+}
+
+.aspect-w-16 > * {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+</style>
+{% endblock %}

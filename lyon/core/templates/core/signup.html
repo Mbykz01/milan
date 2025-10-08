@@ -1,0 +1,249 @@
+{% extends 'core/base.html' %}
+{% load widget_tweaks %}
+
+{% block title %}Sign Up - StockLearn{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <div class="sm:mx-auto sm:w-full sm:max-w-md">
+        <!-- Logo/Brand Section -->
+        <div class="text-center">
+            <div class="mx-auto w-20 h-20 bg-gradient-to-r from-blue-600 to-indigo-700 rounded-2xl flex items-center justify-center shadow-lg mb-4">
+                <i class="fas fa-chart-line text-white text-2xl"></i>
+            </div>
+            <h2 class="text-3xl font-extrabold text-gray-900">
+                Join StockLearn
+            </h2>
+            <p class="mt-2 text-center text-lg text-gray-600 max-w-md mx-auto">
+                Start your investment journey with our comprehensive learning platform
+            </p>
+        </div>
+    </div>
+
+    <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+        <div class="bg-white py-8 px-6 shadow-xl rounded-2xl sm:px-10 border border-gray-100">
+            <!-- Progress Indicator (if multi-step form) -->
+            <div class="mb-6">
+                <div class="flex items-center justify-center space-x-2">
+                    <div class="w-3 h-3 bg-blue-600 rounded-full"></div>
+                    <div class="w-3 h-3 bg-gray-300 rounded-full"></div>
+                    <div class="w-3 h-3 bg-gray-300 rounded-full"></div>
+                </div>
+                <p class="text-center text-xs text-gray-500 mt-2">Step 1 of 3</p>
+            </div>
+
+            <form class="space-y-6" method="POST">
+                {% csrf_token %}
+                
+                {% for field in form %}
+                <div>
+                    <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                        {{ field.label }}
+                        {% if field.field.required %}
+                        <span class="text-red-500">*</span>
+                        {% endif %}
+                    </label>
+                    <div class="mt-1 relative">
+                        {% if field.name == 'username' %}
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-user text-gray-400"></i>
+                        </div>
+                        {% render_field field class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition duration-200" placeholder=field.label %}
+                        
+                        {% elif field.name == 'email' %}
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-envelope text-gray-400"></i>
+                        </div>
+                        {% render_field field class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition duration-200" placeholder=field.label %}
+                        
+                        {% elif field.name == 'password1' or field.name == 'password2' %}
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-lock text-gray-400"></i>
+                        </div>
+                        {% render_field field class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition duration-200" placeholder=field.label %}
+                        
+                        {% else %}
+                        {% render_field field class="block w-full px-3 py-3 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition duration-200" placeholder=field.label %}
+                        {% endif %}
+                        
+                        {% if field.help_text %}
+                        <p class="mt-2 text-xs text-gray-500">{{ field.help_text }}</p>
+                        {% endif %}
+                        {% if field.errors %}
+                        <p class="mt-2 text-sm text-red-600 flex items-center">
+                            <i class="fas fa-exclamation-circle mr-1"></i>
+                            {{ field.errors.0 }}
+                        </p>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+
+                <!-- Referral Code Field (if applicable) -->
+                <div class="bg-blue-50 p-4 rounded-xl border border-blue-200">
+                    <div class="flex items-center mb-2">
+                        <i class="fas fa-gift text-blue-500 mr-2"></i>
+                        <label for="referral_code" class="block text-sm font-medium text-blue-700">
+                            Referral Code (Optional)
+                        </label>
+                    </div>
+                    <p class="text-xs text-blue-600 mb-2">Enter a friend's referral code to get $25 in free credits!</p>
+                    <input type="text" id="referral_code" name="referral_code" 
+                           class="block w-full px-3 py-2 border border-blue-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm" 
+                           placeholder="Enter referral code">
+                </div>
+
+                <!-- Terms and Conditions -->
+                <div class="flex items-center">
+                    <input id="terms" name="terms" type="checkbox" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" required>
+                    <label for="terms" class="ml-2 block text-sm text-gray-700">
+                        I agree to the <a href="#" class="font-medium text-blue-600 hover:text-blue-500">Terms of Service</a> and <a href="#" class="font-medium text-blue-600 hover:text-blue-500">Privacy Policy</a>
+                    </label>
+                </div>
+
+                <div>
+                    <button type="submit" 
+                        class="group w-full flex justify-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-300 transform hover:-translate-y-0.5">
+                        <span class="flex items-center">
+                            Create Account
+                            <i class="fas fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform"></i>
+                        </span>
+                    </button>
+                </div>
+            </form>
+
+            <!-- Divider -->
+            <div class="mt-8">
+                <div class="relative">
+                    <div class="absolute inset-0 flex items-center">
+                        <div class="w-full border-t border-gray-300"></div>
+                    </div>
+                    <div class="relative flex justify-center text-sm">
+                        <span class="px-2 bg-white text-gray-500">
+                            Or continue with
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Social Login Options -->
+                <div class="mt-6 grid grid-cols-2 gap-3">
+                    <a href="#" class="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-xl shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 transition duration-200">
+                        <i class="fab fa-google text-red-500 mr-2"></i>
+                        Google
+                    </a>
+
+                    <a href="#" class="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-xl shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 transition duration-200">
+                        <i class="fab fa-facebook text-blue-600 mr-2"></i>
+                        Facebook
+                    </a>
+                </div>
+            </div>
+
+            <!-- Login Link -->
+            <div class="mt-8 text-center">
+                <p class="text-sm text-gray-600">
+                    Already have an account?
+                    <a href="{% url 'core:login' %}" class="font-medium text-blue-600 hover:text-blue-500 transition duration-200">
+                        Sign in
+                    </a>
+                </p>
+            </div>
+        </div>
+
+        <!-- Benefits Section -->
+        <div class="mt-8 bg-white rounded-2xl shadow-sm p-6 border border-gray-100">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4 text-center">Why Join StockLearn?</h3>
+            <div class="grid grid-cols-1 gap-4">
+                <div class="flex items-start">
+                    <div class="flex-shrink-0">
+                        <div class="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center">
+                            <i class="fas fa-graduation-cap text-green-600"></i>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <h4 class="text-sm font-semibold text-gray-800">Expert-Led Courses</h4>
+                        <p class="text-xs text-gray-600 mt-1">Learn from industry professionals with years of market experience</p>
+                    </div>
+                </div>
+                <div class="flex items-start">
+                    <div class="flex-shrink-0">
+                        <div class="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
+                            <i class="fas fa-chart-bar text-blue-600"></i>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <h4 class="text-sm font-semibold text-gray-800">Real Market Data</h4>
+                        <p class="text-xs text-gray-600 mt-1">Practice with live market data and historical analysis</p>
+                    </div>
+                </div>
+                <div class="flex items-start">
+                    <div class="flex-shrink-0">
+                        <div class="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center">
+                            <i class="fas fa-users text-purple-600"></i>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <h4 class="text-sm font-semibold text-gray-800">Community Support</h4>
+                        <p class="text-xs text-gray-600 mt-1">Join a community of like-minded investors and learners</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Add focus effects to form fields
+    const formInputs = document.querySelectorAll('input');
+    formInputs.forEach(input => {
+        input.addEventListener('focus', function() {
+            this.parentElement.classList.add('ring-2', 'ring-blue-200', 'rounded-xl');
+        });
+        
+        input.addEventListener('blur', function() {
+            this.parentElement.classList.remove('ring-2', 'ring-blue-200', 'rounded-xl');
+        });
+    });
+
+    // Password strength indicator (if applicable)
+    const passwordField = document.querySelector('input[type="password"]');
+    if (passwordField) {
+        passwordField.addEventListener('input', function() {
+            // Add password strength logic here if needed
+        });
+    }
+
+    // Form validation enhancements
+    const form = document.querySelector('form');
+    form.addEventListener('submit', function(e) {
+        // Add custom validation logic here if needed
+    });
+});
+</script>
+
+<style>
+/* Custom styles for enhanced appearance */
+input:focus {
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Animation for form elements */
+form {
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Custom checkbox styling */
+input[type="checkbox"]:checked {
+    background-color: #2563eb;
+    border-color: #2563eb;
+}
+</style>
+{% endblock %} 
