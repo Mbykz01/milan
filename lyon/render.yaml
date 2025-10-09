@@ -1,0 +1,28 @@
+services:
+  - type: web
+    name: lyon
+    env: python
+    plan: free
+    buildCommand: "./build.sh"
+    startCommand: "gunicorn lyon.wsgi:application"
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: lyondb
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: false
+      - key: ALLOWED_HOSTS
+        value: ".onrender.com"
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false
+
+databases:
+  - name: lyondb
+    plan: free

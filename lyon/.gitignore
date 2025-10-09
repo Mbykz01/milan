@@ -3,11 +3,27 @@ __pycache__/
 *.py[cod]
 *.pyo
 
-# Virtual environments
-venv/
-.env/
-
 # Django
 db.sqlite3
 media/
 staticfiles/
+
+# Environment
+.env
+venv/
+env/
+
+# Static files
+# (already included above)
+# staticfiles/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Node
+node_modules/
